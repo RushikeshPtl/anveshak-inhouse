@@ -14,6 +14,7 @@ router.register('content-writer-profile',viewset=ContentWriterProfileViewSet,bas
 urlpatterns = [
     path('assign-reviewer/',AssignReviewer.as_view(),name='assignreviewer' ),
     path('fetch-reviewer-event/',FetchReviewerEvent.as_view(),name='fetchreviewerblogs'),
-    path('fetch-reviewer-event-count/',FetchReviewerEventCount.as_view(),name='fetchreviewereventcount')
-
+    path('fetch-reviewer-event-count/',FetchReviewerEventCount.as_view(),name='fetchreviewereventcount'),
+    path('fetch-event-reviewers-log/',FetchEventReviewersLog.as_view(),name='demo'),
+    path('event-status/',EventStatus.as_view(),name='eventstatus'),
 ]+router.urls + assigned_event_router.urls

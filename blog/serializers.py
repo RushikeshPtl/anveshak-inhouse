@@ -92,72 +92,76 @@ class RoleSerializer(serializers.ModelSerializer):
         model = Role
         fields = '__all__'
 
+
 class ReviewCommentSerializer(serializers.ModelSerializer):
-    event_id = serializers.IntegerField()
-    comment = serializers.CharField(read_only=True)
     class Meta:
         model = ReviewComment
-        fields = ['event_id','comment']
+        fields = '__all__'
 
-# class UserTitleSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model = Title
-#         fields = ['id', 'title']
+class UserTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = ['id', 'title']
 
-# class UserEventSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Event
-#         fields = ['id','title_id','description']
 
-# class AdminTitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = '__all__'
+class UserEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id','title_id','description']
 
-# class AdminEventSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Event
-#         fields = '__all__'
 
-# class ReviewerTitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = '__all__'
+class AdminTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = '__all__'
 
-# class ReviewerEventSerializer(serializers.ModelSerializer):
-#     comments = ReviewCommentSerializer(many=True)
-#     class Meta:
-#         model = Event
-#         fields = ['id','title_id','author','description','year','created_at','status','comments']
-    
-# class ContentWriterTitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = ['id','title']
-# class ContentWriterEventSerializer(serializers.ModelSerializer):
-#     # title_id = serializers.CharField(read_only=True)
-#     class Meta:
-#         model = Event
-#         fields = ['title_id','description']
 
-# class AuthorTitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = ['id','title']
-    
-# class AuthorEventSerializer(serializers.ModelSerializer):   
-#     status = serializers.CharField(read_only=True)
-#     comments = ReviewCommentSerializer(many=True,read_only=True)
-#     review_status = serializers.SerializerMethodField(read_only=True)
-#     def get_review_status(self,obj):
-#         author_id = self.context.get('author_id')
-#         review_status = EventReviewers.objects.values('review_status').filter(author_id=author_id).first()
-#         return review_status.get('review_status')
-        
-#     class Meta:
-#         model = Event
-#         fields = ['id','title_id','author_id','description','year','status','review_status','is_submitted','comments']
+class AdminEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+
+class ReviewerTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = '__all__'
+
+
+class ReviewerEventSerializer(serializers.ModelSerializer):
+    comments = ReviewCommentSerializer(many=True)
+    class Meta:
+        model = Event
+        fields = ['id','title_id','author','description','year','created_at','status','comments']
+
+
+class ContentWriterTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = ['id','title']
+
+
+class ContentWriterEventSerializer(serializers.ModelSerializer):
+    # title_id = serializers.CharField(read_only=True)
+    class Meta:
+        model = Event
+        fields = ['title_id','description']
+
+
+class AuthorTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Title
+        fields = ['id','title']
+
+
+class AuthorEventSerializer(serializers.ModelSerializer):   
+    status = serializers.CharField(read_only=True)
+    comments = ReviewCommentSerializer(many=True,read_only=True)
+    class Meta:
+        model = Event
+        fields = ['id','title_id','author_id','description','year','status','comments','references','other']
+
 
 class BlogSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
@@ -183,3 +187,22 @@ class TitleEventSerializer(serializers.ModelSerializer):
         event = EventListSerializer(event,many=True).data
         return event
 
+
+class SortTitleEventSerializer(serializers.ModelSerializer):
+    
+    title = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
+    class Meta:
+        model = Event
+        fields = ['title','event']
+        
+    def get_title(self,obj):
+        print(obj.title)
+        return obj.title
+    
+    def get_event(self,obj):
+        event = Event.objects.filter(title_id = obj.id)
+        event = EventPostSerializer(event,many=True).data
+        return event
+    
+# class

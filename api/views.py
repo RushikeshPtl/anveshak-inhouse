@@ -72,10 +72,6 @@ def send_welcome_mail(sender,instance=None,created=False,**kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = [instance.email, ]
         send_mail( subject, message, email_from, recipient_list )
-
-
-
-        
 @permission_classes((rest_framework.permissions.AllowAny,))
 class ResetPassword(rest_framework.views.APIView):
     def post(self,request,format = "json"):
@@ -120,6 +116,8 @@ class NewPassword(rest_framework.views.APIView):
         user.save()
         
         return Response({"Password Reseted Successfully"})
+
+
 class UpdateAccount(rest_framework.views.APIView):
     
     def get(self,request,pk):
@@ -140,6 +138,8 @@ class UpdateAccount(rest_framework.views.APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)
+
+
 class AdminPanel(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
     queryset = Account.objects.all()
@@ -149,6 +149,7 @@ class AdminPanel(viewsets.ModelViewSet):
         serializer = AccountSerializer(self.queryset,many=True)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
     def partial_update(self, request,pk):
         user = Account.objects.get(pk=pk)
         
@@ -157,6 +158,8 @@ class AdminPanel(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)
+
+
 class UploadView(rest_framework.views.APIView):
   parser_classes = (MultiPartParser, FormParser)
 
@@ -175,3 +178,5 @@ class UploadView(rest_framework.views.APIView):
 
 
     
+
+
