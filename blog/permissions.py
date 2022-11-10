@@ -1,7 +1,11 @@
 from rest_framework import permissions
 from .models import Role
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import AnonymousUser
+
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self,request,view):
+        role_obj = get_object_or_404(Role,account=request.user.id)
+        return bool(request.user and request.user.is_staff and role_obj.is_admin)
 
 class IsAdmin(permissions.BasePermission):
     def has_permission(self,request,view):

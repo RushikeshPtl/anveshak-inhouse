@@ -34,7 +34,9 @@ class Account(AbstractBaseUser):
     objects = UserManager()
 
     class Meta:
-        db_table = u'api_account'    
+        db_table = u'api_account'
+    
+    
 
 
 class Document(models.Model):

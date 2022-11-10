@@ -72,8 +72,6 @@ def send_welcome_mail(sender,instance=None,created=False,**kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = [instance.email, ]
         send_mail( subject, message, email_from, recipient_list )
-
-        
 @permission_classes((rest_framework.permissions.AllowAny,))
 class ResetPassword(rest_framework.views.APIView):
     def post(self,request,format = "json"):
@@ -172,5 +170,13 @@ class UploadView(rest_framework.views.APIView):
       return Response(file_serializer.data, status=status.HTTP_201_CREATED)
     else:
       return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+
+    
+    
+
+
+    
 
 

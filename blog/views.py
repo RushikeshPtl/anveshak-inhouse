@@ -49,36 +49,32 @@ class TitleViewSet(ModelViewSet):
             title_id = self.kwargs['title_pk']
         except KeyError:
             title_id = None
-        return {'account_id':self.request.user.id,'title_id':title_id}
-
-
+        role = get_user_role(self)
+        return {'account_id':self.request.user.id,'title_id':title_id,'user_role':role}
 class EventViewSet(ModelViewSet):
     renderer_classes = [CustomRenderer]
+    serializer_class = EventSerializer
     def get_queryset(self):
         user_id = self.request.user.id
         try:
-            json = TitleEvents.get(self,request=request,pk=pk)
-            return StandardResponse.success_response(self,data=json,message="Data Fetched Successfully!",status=status.HTTP_200_OK)
-        except Http404:
-            return StandardResponse.http404_response(self,data=None,message="Not Found",status=status.HTTP_404_NOT_FOUND)
-        except serializers.ValidationError:
-            return StandardResponse.validationerror_response(self,data=None,message=str(serializers.ValidationError),status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    def get_serializer_class(self):
+            title_id = self.kwargs['title_pk']
+        except KeyError:
+            title_id = None
         role = get_user_role(self)
-        if role == 'admin':
-            return AdminEventSerializer
-        elif role == 'reviewer':
-            return ReviewerEventSerializer
-        elif role == 'content writer':
-            return ContentWriterEventSerializer
+        if role == 'user':
+            return Event.objects.filter(title_id=title_id,status='A',is_submitted=1).all()
         elif role == 'author':
-            return AuthorEventSerializer
-        elif role == 'user':
-            return UserEventSerializer
-
+            return Event.objects.filter(title_id=title_id,author_id=user_id).all()
+        elif role == 'content writer':
+            event_ids = EventContentWriter.objects.values('event_id').filter(assigned_content_writer_id=user_id)
+            return Event.objects.filter(title_id=title_id,id__in=event_ids).all()
+        elif role == 'reviewer':
+            event_ids = EventReviewers.objects.values('event_id').filter(assigned_reviewer_id=user_id)
+            return Event.objects.filter(title_id=title_id,id__in=event_ids)
+        elif title_id == None:
+            return Event.objects.all()
+        return Event.objects.filter(title_id=title_id).all()
+    
     def get_permissions(self):
         role = get_user_role(self)
         if role == 'admin':
@@ -91,15 +87,16 @@ class EventViewSet(ModelViewSet):
             return [IsContentWriter()]
         elif role == 'user':
             return [IsUser()]
+    
 
     def get_serializer_context(self):
         try:
             title_id = self.kwargs['title_pk']
         except KeyError:
             title_id = None
-        return {'author_id':self.request.user.id,'title_id':title_id}
-
-
+        role = get_user_role(self)
+        return {'author_id':self.request.user.id,'title_id':title_id,'user_role':role,'request':self.request.method}
+    
 class ReviewCommentViewSet(ModelViewSet):
     queryset = ReviewComment.objects.all()
     serializer_class = ReviewCommentSerializer

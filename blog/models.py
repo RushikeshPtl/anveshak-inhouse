@@ -24,37 +24,19 @@ class Event(models.Model):
         (STATUS_SUBMITTED,'Submitted'),
         (STATUS_RESUBMITTED,'Resubmitted'),
         (STATUS_REWORK,'Rework'),
+        
     ]
     title_id = models.ForeignKey(Title,on_delete=models.CASCADE,db_column='title_id',related_name='events')
     author_id= models.ForeignKey(Account,on_delete=models.CASCADE,db_column='author_id',related_name='events')
-    status = models.CharField(max_length=12,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
     description = models.TextField()
     year = models.IntegerField()
     created_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=12,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
     is_saved = models.BooleanField(default=1)
     is_submitted = models.BooleanField(default=0)
-    
-    INSTAGRAM = 'I'
-    FACEBOOK = 'F'
-    WHATSAPP = 'W'
-    TWITTER = 'T'
-    TV = 'T'
-    OTHER = 'O'
-    STATUS_CHOICES_REFERENCES = [
-        (INSTAGRAM,'Instagram'),
-        (FACEBOOK,'facebook'),
-        (WHATSAPP,'Whatsapp'),
-        (TWITTER,'twitter'),
-        (TV,'tv'),
-        (OTHER,'other')
-    ]
-    references = models.CharField(max_length=12,choices=STATUS_CHOICES_REFERENCES)
-    other = models.CharField(max_length=100,null=True)
-
     REQUIRED_FIELDS = ['title','description']
     class Meta:
         db_table = 'Event'
-
     def validation(self,id):
         role = Role.objects.filter(is_admin = 1,account_id=id)
         if len(role) > 0:
@@ -63,6 +45,7 @@ class Event(models.Model):
         if id == self.author_id:
             return True
         return False
+        
 
 
 class Role(models.Model):
@@ -75,6 +58,7 @@ class Role(models.Model):
     
     class Meta:
         db_table = 'Role'
+    
 
 
 class ReviewComment(models.Model):

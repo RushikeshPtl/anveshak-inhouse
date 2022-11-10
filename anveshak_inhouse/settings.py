@@ -84,13 +84,16 @@ WSGI_APPLICATION = 'anveshak_inhouse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'TEMP2',
-        'USER' : 'root',
-        'PASSWORD' : 'root',
-        'HOST' : '127.0.0.1',
-        'PORT' : '3306',
+        'NAME': 'anveshak_inhouse',
+        'USER': 'root',
+        'PASSWORD': 'anveshak',
+        'HOST':'localhost',
+        'PORT':'3306',
     }
 }
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -142,6 +145,7 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
@@ -149,6 +153,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'anvtc1199@gmail.com'
 EMAIL_HOST_PASSWORD = 'zznpquloswjzuppy'
 
+# Celery Settings
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -164,6 +169,6 @@ INTERNAL_IPS = [
 ]
 
 
-
+# Media Settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")

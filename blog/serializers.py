@@ -1,42 +1,91 @@
 from rest_framework import serializers
 from .models import ReviewComment, Role, Title, Event
 from api.models import Account
-
-def status(status):
-    if status == 'A':
-            return "STATUS_APPROVED"
-    elif status == 'R':
-        return "STATUS_REJECTED"
-    elif status == 'U':
-        return "STATUS_UNDER_REVIEW"
-    elif status == 'S':
-        return "STATUS_SUBMITTED"
-    elif status == 'RS':
-        return "STATUS_RESUBMITTED"
-    elif status == 'RW':
-        return "STATUS_REWORK"
-
+from review.models import EventReviewers
 
 class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
-        fields = ['title','country_of_origin']
+        fields = '__all__'
 
+    def to_representation(self, instance):
+        user_role = self.context.get('user_role')
+        representation = super().to_representation(instance)
+        if user_role == 'admin':
+            return representation
+        else:
+            representation_data = {
+            "id" : representation['id'],
+            "title" : representation['title'],
+            "country_of_origin" : representation['country_of_origin']
+            }
+            return representation_data
+            
+    def to_internal_value(self, data):
+         return super().to_internal_value(data)
 
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+    def to_representation(self, instance):
+        user_role = self.context.get('user_role')
+        representation = super().to_representation(instance)
+        representation_data = {
+            "id" : representation['id'],
+            "author_id" : representation['author_id'],
+            "title_id" : representation['title_id'],
+            "description" : representation['description'],
+            "year" : representation['year'],
+            "status" : representation['status']
+            }
+        if user_role == 'admin':
+            return representation
+        elif user_role == 'reviewer':
+            return representation_data
+        elif user_role == 'content writer':
+            return representation_data
+        elif user_role == 'author':
+            return representation_data
+        elif user_role == 'user':
+            return representation_data
+    def to_internal_value(self, data):
+        user_role = self.context.get('user_role')
+        try:
+            
+            resource_data = {
+                "author_id" : data['author_id'],
+                "title_id" : data['title_id'],
+                "description" : data['description'],
+                "year" : data['year']
+            }
+            if self.context.get('request') in ['POST','PUT']:
+                return super().to_internal_value(resource_data)
+
+        except:
+            try:
+                if user_role == 'content writer':
+                    cw_data = {'description':data['description'],'is_submitted':data['is_submitted']}
+                    return super().to_internal_value(cw_data)
+                elif user_role == 'reviewer':
+                    rwr_data = {'status':data['status']}
+                    return super().to_internal_value(rwr_data)
+            except:
+                return ({"unauthorized":"You are not authorized to perform this action!"})
+        
+        if user_role == 'admin':
+            return super().to_internal_value(data)
+        elif user_role == 'reviewer':
+            return super().to_internal_value(resource_data)
 class EventListSerializer(serializers.ModelSerializer):
-    status = serializers.SerializerMethodField()
     class Meta:
         model = Event
         fields = ['id','author_id','description','year','status']
-    def get_status(self,obj):
-        return status(obj.status)
-
 
 class EventPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id','title_id','author_id','description','year','created_at','references','other']
-
+        fields = ['title_id','author_id','description','year']
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -119,7 +168,6 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ('id','first_name','last_name','middle_name','email','phone','gender','title')
-
     def get_title(self,obj):
         title = Title.objects.filter(events__author_id=obj.id).distinct()
         event = TitleEventSerializer(title,many=True,context={'id': obj.id}).data
@@ -132,10 +180,8 @@ class TitleEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['title','event']
-
     def get_title(self,obj):
         return obj.title
-
     def get_event(self,obj):
         event = Event.objects.filter(title_id = obj.id,author_id = self.context.get('id') )
         event = EventListSerializer(event,many=True).data

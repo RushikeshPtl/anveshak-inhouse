@@ -43,5 +43,10 @@ class EventReviewLogs(models.Model):
     comment = models.ForeignKey(ReviewComment,on_delete=models.SET_NULL,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status_before = models.CharField(max_length=10,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
-    status_now = models.CharField(max_length=10,choices=STATUS_CHOICES,default=STATUS_UNDER_REVIEW)
+    status = models.CharField(max_length=10,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
+
+class EventContentWriter(models.Model):
+    event_id = models.ForeignKey(Event,on_delete=models.CASCADE,db_column='event_id',related_name='content_writer')
+    assigned_content_writer_id = models.ForeignKey(Account,on_delete=models.CASCADE,db_column='assigned_content_writer_id',related_name='content_writers')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    
