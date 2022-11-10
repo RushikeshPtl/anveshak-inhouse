@@ -1,0 +1,65 @@
+from django.db import models
+from api.models import Account
+
+class Title(models.Model):
+    title = models.CharField(max_length = 255)
+    country_of_origin = models.CharField(max_length=255,default="India")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        db_table = 'Title'
+
+class Event(models.Model):
+    STATUS_APPROVED = 'A'
+    STATUS_REJECTED = 'R'
+    STATUS_UNDER_REVIEW ='U'
+    STATUS_SUBMITTED = 'S'
+    STATUS_RESUBMITTED = 'RS'
+    STATUS_REWORK = 'RW'
+    STATUS_CHOICES =[
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+        (STATUS_UNDER_REVIEW,'Under Review'),
+        (STATUS_SUBMITTED,'Submitted'),
+        (STATUS_RESUBMITTED,'Resubmitted'),
+        (STATUS_REWORK,'Rework'),
+        
+    ]
+    title_id = models.ForeignKey(Title,on_delete=models.CASCADE,db_column='title_id',related_name='events')
+    author_id= models.ForeignKey(Account,on_delete=models.CASCADE,db_column='author_id',related_name='events')
+    description = models.TextField()
+    year = models.IntegerField()
+    created_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=12,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
+    is_saved = models.BooleanField(default=1)
+    is_submitted = models.BooleanField(default=0)
+    REQUIRED_FIELDS = ['title','description']
+    class Meta:
+        db_table = 'Event'
+    def validation(self,id):
+        role = Role.objects.filter(is_admin = 1,account_id=id)
+        if len(role) > 0:
+            if role[0].account_id == id:
+                return True
+        if id == self.author_id:
+            return True
+        return False
+        
+class Role(models.Model):
+    account = models.OneToOneField(Account,on_delete=models.CASCADE,related_name='roles')
+    is_admin = models.BooleanField(default=0)
+    is_reviewer = models.BooleanField(default=0)
+    is_content_writer = models.BooleanField(default=0)
+    is_author = models.BooleanField(default=0)
+    is_user = models.BooleanField(default=1)
+    
+    class Meta:
+        db_table = 'Role'
+    
+class ReviewComment(models.Model):
+    
+    event_id = models.ForeignKey(Event,on_delete=models.CASCADE,db_column='event_id',related_name='comments')
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
