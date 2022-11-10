@@ -1,0 +1,236 @@
+Project Title: "anveshak_inhouse"
+
+List of Endpoints and input - output format :
+
+1.http://127.0.0.1:8000/api/signup/
+Method : POST
+
+Input ->
+{
+	"first_name":"abc",
+	"last_name" : "xyz",
+	"middle_name" : "pqr",
+	"email" : "a@b.com",
+	"phone" : "86977594",
+	"dob" : "2022-09-09",
+	"gender" : "M",
+	"password" : "12343ds",
+	"password2" : "12343ds"
+}
+
+
+Output ->
+{
+    	"response": "Successfully Registered a new user",
+    	"first_name": "abc",
+    	"last_name": "xyz",
+    	"email": "a@b.com",
+    	"token": "ba6e766393f4859cac747fb6fb10ab5fdfd5a47f"
+}
+
+
+2.http://127.0.0.1:8000/api/login/
+Method : POST
+
+Input -> 
+{
+	"email": "a@b.com",
+	"password" "12343ds"	
+}
+
+
+Output ->
+{
+	"token": "ba6e766393f4859cac747fb6fb10ab5fdfd5a47f"
+}	
+
+
+3.http://127.0.0.1:8000/api/update/1/
+Method : GET
+
+Output ->
+{
+    "first_name": "super",
+    "last_name": "user",
+    "middle_name": "su",
+    "email": "super@user.com",
+    "phone": "98226578",
+    "dob": "2000-02-02",
+    "gender": "M"
+}
+
+Methods: PUT,PATCH
+
+Input ->
+
+{
+    "first_name": "super123",
+    "last_name": "user123",
+    "middle_name": "su",
+    "email": "super@user.com",
+    "phone": "98226578",
+    "dob": "2000-02-02",
+    "gender": "M"
+}
+
+Output ->
+
+{
+    "first_name": "super123",
+    "last_name": "user123",
+    "middle_name": "su",
+    "email": "super@user.com",
+    "phone": "98226578",
+    "dob": "2000-02-02",
+    "gender": "M"
+}
+
+
+4. http://127.0.0.1:8000/api/reset-password/
+
+Input ->
+Method:POST
+
+Input ->
+
+{
+	"email": "super@user.com",
+}
+
+Output ->
+
+{
+	"msg": "Email Sent"
+}
+
+
+5. http://127.0.0.1:8000/api/change-password/
+ 
+Method : POST
+
+Input ->
+
+{
+	"password": "etri245",
+	"confirm password : "etri245"
+}
+
+Output ->
+
+{
+	"msg" : "password changed successfully!"
+}
+
+
+6.http://127.0.0.1:8000/api/upload/1/
+
+Method:POST
+
+Input ->
+{
+	"account_id" : "1",
+	"file" : "abc.txt",
+	"image" : "xyz.png"
+}
+
+Output ->
+{
+	"msg" : "Files uploaded Successfully!"
+}
+
+
+7.http://127.0.0.1:8000/blog/admin-interface/
+
+Methods: GET,POST,PUT,PATCH,DELETE
+Input ->
+
+{
+	"title_id" : "1",
+	"author" : "xyz",
+	"description" : "description",
+	"year" : "2009",
+	"status" : "A"
+
+}
+
+Output ->
+
+{
+	"title_id" : "1",
+	"author" : "xyz",
+	"description" : "description",
+	"year" : "2009",
+	"status" : "A"
+}
+
+
+8.http://127.0.0.1:8000/blog/roles/
+
+Methods:GET,PUT,PATCH
+	
+Input -> 
+
+{
+	"id" : "1",
+	"is_admin" : "false",
+        "is_reviewer" : "true",
+	"is_author" : "false",
+	"is_content_writer" : "false",
+	"is_user" : "true"
+}
+
+Output ->
+
+{
+	"id" : "1",
+	"is_admin" : "false",
+        "is_reviewer" : "true",
+	"is_author" : "false",
+	"is_content_writer" : "false",
+	"is_user" : "true"
+}	
+
+
+9.http://127.0.0.1:8000/blog/comments/
+
+Methods : GET,POST
+
+Input ->
+
+{
+	"id" : "",
+	"author" : "",
+	"description" : "",
+	"year" : "",
+	"status" : "",
+	"comments" : ""
+}
+
+Output ->
+
+{
+	"id" : "",
+	"author" : "",
+	"description" : "",
+	"year" : "",
+	"status" : "",
+	"comments" : ""
+}
+
+10. http://127.0.0.1:8000/blog/author-interface/
+
+Input ->
+
+
+
+Output ->
+
+
+
+
+
+
+
+
+
+	
