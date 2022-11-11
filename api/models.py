@@ -6,7 +6,7 @@ class Account(AbstractBaseUser):
     gender_choices = [
         ("M","Male"),
         ("F","Female")
-    ]
+    ]           # add one choice --(don't want to disclose)
    
     first_name = models.CharField(max_length=10)
     last_name = models.CharField(max_length=10)
@@ -21,11 +21,10 @@ class Account(AbstractBaseUser):
     last_login = models.DateTimeField(default=None, null=True)
     password_reset = models.CharField(max_length=50,unique=True,null=True)
     is_admin =  models.BooleanField(default=0)
-    is_staff = models.BooleanField(default=0
-    )
+    is_staff = models.BooleanField(default=0)
 
    
-    
+    # username=None
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 

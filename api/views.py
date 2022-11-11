@@ -5,7 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status,viewsets
 from rest_framework.authtoken.models import Token
 from blog.models import Role
-from .serializers import AccountSerializer, SignUpSerializer,UpdateSerializer,AdminSerializer,DocumentSerializer
+from .serializers import AccountSerializer, SignUpSerializer,UpdateSerializer,AdminSerializer,DocumentSerializer,ChangePasswordSerializer
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -14,6 +14,12 @@ import uuid
 from django.http import HttpResponse
 from django.core.mail import send_mail
 from . import tasks
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from blog.renderers import CustomRenderer
+from blog.permissions import IsAdmin,IsAuthor,IsContentWriter,IsReviewer,IsUser
+from .pagination import CustomPageNumberPagination  
+
 
 class FileView(rest_framework.views.APIView):
   parser_classes = (MultiPartParser,FormParser)
@@ -37,8 +43,6 @@ class SignUpApi(rest_framework.views.APIView):
         
         if serializer.is_valid():
             user = serializer.save()
-        
-
             data['response'] = "Successfully Registered a new user"
             data['first_name'] = user.first_name
             data['last_name'] = user.last_name
@@ -52,8 +56,7 @@ class SignUpApi(rest_framework.views.APIView):
 
         return Response(data)
     
-        
-            
+                 
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender,instance=None,created=False,**kwargs):
     if created:
@@ -72,13 +75,13 @@ def send_welcome_mail(sender,instance=None,created=False,**kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = [instance.email, ]
         send_mail( subject, message, email_from, recipient_list )
+        
+        
 @permission_classes((rest_framework.permissions.AllowAny,))
 class ResetPassword(rest_framework.views.APIView):
     def post(self,request,format = "json"):
         try:
-
-            user = Account.objects.filter(email = self.request.data.get("email"))
-            
+            user = Account.objects.filter(email = self.request.data.get("email"))  
             if not user.exists():
                 raise AssertionError(f"Invalid Email")
             print("Hello")
@@ -118,7 +121,7 @@ class NewPassword(rest_framework.views.APIView):
         return Response({"Password Reseted Successfully"})
 
 
-class UpdateAccount(rest_framework.views.APIView):
+class UpdateAccount(rest_framework.views.APIView):  #Check for authorisations.
     
     def get(self,request,pk):
         try:
@@ -133,7 +136,8 @@ class UpdateAccount(rest_framework.views.APIView):
             account = Account.objects.get(pk=pk)
         except Account.DoesNotExist:
             return HttpResponse(status=404)
-        data = rest_framework.parsers.JSONParser().parse(request)
+
+        data=request.data
         serializer = UpdateSerializer(account,data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -142,9 +146,10 @@ class UpdateAccount(rest_framework.views.APIView):
 
 class AdminPanel(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
+    pagination_class=CustomPageNumberPagination
     queryset = Account.objects.all()
-
     permission_classes = [rest_framework.permissions.IsAdminUser]
+    
     def list(self,request):
         serializer = AccountSerializer(self.queryset,many=True)
         serializer.is_valid(raise_exception=True)
@@ -158,6 +163,7 @@ class AdminPanel(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)
+    
 
 
 class UploadView(rest_framework.views.APIView):
@@ -171,12 +177,38 @@ class UploadView(rest_framework.views.APIView):
     else:
       return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        
 
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    model = Account 
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+
+class GetAllUserView(viewsets.ModelViewSet):
+    """
+    List of all Users
+    """
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    pagination_class=CustomPageNumberPagination
     
     
-
-
+class AdminAddUser(viewsets.ModelViewSet):
+    renderer_classes = [CustomRenderer]
+    queryset = Account.objects.all()
+    serializer_class = SignUpSerializer
+    permission_classes = [IsAdmin]
     
-
-
+@receiver(post_save,sender=settings.AUTH_USER_MODEL)
+def send_registration_mail(sender,instance=None,created=False,**kwargs):
+    if created:
+        new_line='\n'
+        subject = f'Hi {instance.first_name} {instance.last_name}!!! WELCOME to ANVESHAK_INHOUSE. Your Account is Created by Admin.'
+        message = f'Thank you for registering.{new_line}Your Login Credentials are: {new_line}email={instance.email} {new_line}password={instance._password}.{new_line}Do not share your password with anyone.'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [instance.email, ]
+        send_mail(subject, message, email_from, recipient_list)
+   

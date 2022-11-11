@@ -5,7 +5,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ["first_name","last_name","middle_name","email","phone","dob","gender","password","roles"]
+        fields = ["first_name","last_name","middle_name","email","phone","dob","gender","password","roles"]  #Changes in fields(password should not be visible.)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -58,3 +58,27 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields ='__all__'
+        
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, max_length=30)
+    password = serializers.CharField(required=True, max_length=30)
+    confirmed_password = serializers.CharField(required=True, max_length=30)
+
+    def validate(self, data):
+        if not self.context['request'].user.check_password(data.get('old_password')):
+            raise serializers.ValidationError({'old_password': 'Wrong password.'})
+
+        if data.get('confirmed_password') != data.get('password'):
+            raise serializers.ValidationError({'password': 'Password must be confirmed correctly.'})
+
+        return data
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
+
+    @property
+    def data(self):
+        return {'Success': 'Password changed Successfully'}

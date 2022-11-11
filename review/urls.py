@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ReviewerAssignedEventsViewSet,AuthorViewSet,ReviewerCommentsViewSet,AssignReviewer,FetchReviewerEvent,FetchReviewerEventCount,AssignContentWriter,ContentWriterProfileViewSet
+from .views import ReviewerAssignedEventsViewSet,AuthorViewSet,ReviewerCommentsViewSet,AssignReviewer,FetchReviewerEvent,FetchReviewerEventCount,FetchEventReviewersLog,AssignContentWriter,ContentWriterProfileViewSet,EventStatus
 from rest_framework_nested import routers
 router = routers.DefaultRouter()
 router.register('assigned-events',viewset=ReviewerAssignedEventsViewSet,basename='assigned_events')

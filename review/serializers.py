@@ -179,3 +179,34 @@ class ContentWriterProfileSerializer(serializers.ModelSerializer):
                 representation["msg"] = "This Content Writer has been Blocked because of poor performance!"
                 return representation  
             return representation
+
+
+class FetchEventReviewersLogSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = ['title','event']
+        # fields = ['event']
+
+    def get_title(self,obj):
+        # print(obj.event_id.title_id.title)
+        # title = Title.objects.filter(id = obj.event_id_id)
+        return obj.event_id.title_id.title
+
+    def get_event(self,obj):
+        event = Event.objects.filter(id = obj.event_id_id)
+        event = EventListSerializer(event[0]).data
+        # print(event)
+
+        reviewcomment = ReviewComment.objects.filter(event_id = event.get('id'))
+        if len(reviewcomment) > 0:
+            event['comment'] = ReviewCommentSerializer(reviewcomment[0]).data
+            eventreviewlogs = EventReviewLogs.objects.filter(event_id=event.get('id'))
+            event['log'] = EventReviewLogsSerializer(eventreviewlogs[0]).data
+        # else:
+        #     event['comment'] = "Reviwers didn't make any comment"
+        #     event['log'] = "Reviwers didn't make any comment so dont have a log"
+        # print(event)
+        return event

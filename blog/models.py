@@ -42,14 +42,15 @@ class Event(models.Model):
         if len(role) > 0:
             if role[0].account_id == id:
                 return True
-        if id == self.author_id:
+
+        if id == self.author_id_id:
             return True
         return False
         
 
 
 class Role(models.Model):
-    account = models.OneToOneField(Account,on_delete=models.CASCADE,related_name='roles')
+    account = models.OneToOneField(Account,on_delete=models.CASCADE,related_name='roles')         #null=true should be included for rolewise user. 
     is_admin = models.BooleanField(default=0)
     is_reviewer = models.BooleanField(default=0)
     is_content_writer = models.BooleanField(default=0)

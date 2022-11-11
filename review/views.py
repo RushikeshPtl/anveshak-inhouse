@@ -52,15 +52,15 @@ class ReviewerCommentsViewSet(ModelViewSet):
         return ReviewComment.objects.filter(event_id__in=assigned_event_ids,event_id=event_id).all()
     serializer_class = ReviewCommentSerializer
 
-@receiver(post_save, sender=ReviewComment)
-def create_event_review_logs(sender,instance=None,created=False,**kwargs):
-    if created:
-        comment_id=instance.id
-        event_id =instance.event_id
-        event_reviewer_id = EventReviewers.objects.values('assigned_reviewer_id').filter(event_id=event_id).first()['assigned_reviewer_id']
-        status = Event.objects.values('status').filter(id=event_id).first()['status']
-        EventReviewLogs.objects.create(comment_id=comment_id,event_id=event_id,event_reviewer_id=event_reviewer_id,status=status)
-        instance.save()
+# @receiver(post_save, sender=ReviewComment)
+# def create_event_review_logs(sender,instance=None,created=False,**kwargs):
+#     if created:
+#         comment_id=instance.id
+#         event_id =instance.event_id
+#         event_reviewer_id = EventReviewers.objects.values('assigned_reviewer_id').filter(event_id=event_id).first()['assigned_reviewer_id']
+#         status = Event.objects.values('status').filter(id=event_id).first()['status']
+#         EventReviewLogs.objects.create(comment_id=comment_id,event_id=event_id,event_reviewer_id=event_reviewer_id,status=status)
+#         instance.save()
 
 # To get List of events authored by him which have status in  Rework,Rejected,Under Review, Approved 
 class AuthorViewSet(ModelViewSet):
