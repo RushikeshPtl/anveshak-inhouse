@@ -26,6 +26,8 @@ class FileView(rest_framework.views.APIView):
     else:
       return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# Api for creating New User
 @permission_classes([rest_framework.permissions.AllowAny,])  
 class SignUpApi(rest_framework.views.APIView):
     def get(self,request):
@@ -34,10 +36,9 @@ class SignUpApi(rest_framework.views.APIView):
     def post(self,request):
         serializer = SignUpSerializer(data=request.data)
         data = {}
-        
+
         if serializer.is_valid():
             user = serializer.save()
-        
 
             data['response'] = "Successfully Registered a new user"
             data['first_name'] = user.first_name
@@ -53,17 +54,20 @@ class SignUpApi(rest_framework.views.APIView):
         return Response(data)
     
         
-            
+
+
+# signal used here 
+# Create auth token
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender,instance=None,created=False,**kwargs):
     if created:
         Token.objects.create(user=instance)
-
+# creating  a role for a account
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)
 def create_role(sender,instance=None,created=False,**kwargs):
     if created:
         Role.objects.create(account=instance)
-
+# sending mail
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)
 def send_welcome_mail(sender,instance=None,created=False,**kwargs):
     if created:
@@ -72,6 +76,10 @@ def send_welcome_mail(sender,instance=None,created=False,**kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = [instance.email, ]
         send_mail( subject, message, email_from, recipient_list )
+
+
+
+# Reset Password of User
 @permission_classes((rest_framework.permissions.AllowAny,))
 class ResetPassword(rest_framework.views.APIView):
     def post(self,request,format = "json"):
@@ -87,9 +95,10 @@ class ResetPassword(rest_framework.views.APIView):
             user.save()
             if tasks.mailSent.delay(user.email, user.password_reset) :
                 return Response({"Email sent"})
-        
+
         except (AssertionError) as ex:
                 return Response({"Email has not been sent"})
+
 
 @permission_classes((rest_framework.permissions.AllowAny,))
 class NewPassword(rest_framework.views.APIView):
@@ -133,8 +142,9 @@ class UpdateAccount(rest_framework.views.APIView):
             account = Account.objects.get(pk=pk)
         except Account.DoesNotExist:
             return HttpResponse(status=404)
-        data = rest_framework.parsers.JSONParser().parse(request)
-        serializer = UpdateSerializer(account,data=data)
+        data = request.data
+        serializer = UpdateSerializer(account,data=data,partial=True)
+        # serializer = UpdateSerializer(account,data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)

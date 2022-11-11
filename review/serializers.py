@@ -8,15 +8,15 @@ from django.db.models.functions import Concat
 from blog.functions import get_user_role
 from . import tasks
 from rest_framework.response import Response
+from .models import EventReviewers,EventReviewLogs
+from blog.serializers import EventListSerializer,EventPostSerializer,status
+from django.db.models import Count
 
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['id','title_id','author_id','description','year','created_at','status']
-from .models import EventReviewers,EventReviewLogs
-from blog.serializers import EventListSerializer,EventPostSerializer,status
-from django.db.models import Count
 
 class EventSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
@@ -43,17 +43,19 @@ class FetchEventReviewersSerializer(serializers.ModelSerializer):
 
     def get_title(self,obj):
         if "yes" == self.context.get('history').lower():
-            event = Event.objects.filter(id = obj.event_id_id,status = 'A' or 'R')
+            event = Event.objects.filter(id = obj.event_id_id,status__in = ["A", "R"])
         else:
             event = Event.objects.filter(id = obj.event_id_id)
-            title = Title.objects.filter(id = event[0].title_id_id)
+
+        title = Title.objects.filter(id = event[0].title_id_id)
         return title[0].title
 
     def get_event(self,obj):
         if "yes" == self.context.get('history').lower():
-            event = Event.objects.filter(id = obj.event_id_id,status = 'A' or 'R')
+            event = Event.objects.filter(id = obj.event_id_id,status__in = ["A", "R"])
         else:
             event = Event.objects.filter(id = obj.event_id_id)
+
         event = EventListSerializer(event[0]).data
         return event
 
@@ -89,26 +91,38 @@ class FetchReviewerEventCountSerializer(serializers.ModelSerializer):
             dict['Under Review'] = 0
 
         dict['Under Review Percentage'] = (len(a) * 100) / obj.get('total')
-        
-        # a = EventReviewers.objects.filter(archived=0,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event_id__status = 'S').values('event_id').annotate(Count('event_id'))
-        # if len(a) > 0:
-        #     dict['Submitted'] = a[0].get('event_id__count')
-        # else:
-        #     dict['Submitted'] = 0
+
         return dict
     
     def get_approved(self,obj):
         dict = {}
-        a = EventReviewers.objects.filter(archived=0,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event__status = 'A').values('event_id').annotate(Count('event_id'))
+        
+        # try both queries from this two. one will work. it actully depends upoun your system i guess.
+        
+        # a = EventReviewers.objects.filter(archived=1,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event__status = 'A').values('event_id').annotate(Count('event_id'))
+        a = EventReviewers.objects.filter(archived=1,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event_id__status = 'A').values('event_id').annotate(Count('event_id'))
+        print(a)
         if len(a) > 0:
-                return a[0].get('event_id__count')
-        return 0
+            dict['Approved'] = len(a)
+        else:
+            dict['Approved'] = 0
+
+        dict['Approved Percentage'] = (len(a) * 100) / obj.get('total')
+        return dict
     
     def get_rejected(self,obj):
-        a = EventReviewers.objects.filter(archived=0,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event__status = 'R').values('event_id').annotate(Count('event_id'))
+        dict = {}
+        # a = EventReviewers.objects.filter(archived=1,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event__status = 'A').values('event_id').annotate(Count('event_id'))
+        a = EventReviewers.objects.filter(archived=1,assigned_reviewer_id = obj.get('assigned_reviewer_id')).filter(event_id__status = 'R').values('event_id').annotate(Count('event_id'))
         if len(a) > 0:
-                return a[0].get('event_id__count')
-        return 0
+            dict['Rejected'] = len(a)
+        else:
+            dict['Rejected'] = 0
+
+        dict['Rejected Percentage'] = (len(a) * 100) / obj.get('total')
+
+        return dict
+
 
 class EventContentWriterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -179,3 +193,34 @@ class ContentWriterProfileSerializer(serializers.ModelSerializer):
                 representation["msg"] = "This Content Writer has been Blocked because of poor performance!"
                 return representation  
             return representation
+
+
+class ReviewCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewComment
+        fields = ['comment','created_at','updated_at']
+
+
+class FetchEventReviewersLogSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Event
+        fields = ['title','event']
+
+    def get_title(self,obj):
+        return obj.event_id.title_id.title
+
+    def get_event(self,obj):
+        event = Event.objects.filter(id = obj.event_id_id)
+        event = EventListSerializer(event[0]).data
+
+        reviewcomment = ReviewComment.objects.filter(event_id = event.get('id'))
+
+        if len(reviewcomment) > 0:
+            event['comment'] = ReviewCommentSerializer(reviewcomment[0]).data
+            eventreviewlogs = EventReviewLogs.objects.filter(event_id=event.get('id'))
+            event['log'] = EventReviewLogsSerializer(eventreviewlogs[0]).data
+
+        return event

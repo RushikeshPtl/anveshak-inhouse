@@ -10,4 +10,4 @@ urlpatterns = [
     path("change-password/",NewPassword.as_view()),
     path('upload/<str:pk>', UploadView.as_view(), name='file-upload')
     
-]  
+]

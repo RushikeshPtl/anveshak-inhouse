@@ -154,11 +154,13 @@ class ContentWriterProfileViewSet(ReadOnlyModelViewSet):
             content_writer_id=None
         return {'action':self.action,'cw_id':content_writer_id}
 
+# Get events that assigned for particular reviwer
 @permission_classes([rest_framework.permissions.IsAuthenticated,IsReviewer])
 class FetchReviewerEvent(APIView):
     def get(self,request,format="json"):
         if "yes" == self.request.data.get('history').lower():
             eventreviewers = EventReviewers.objects.filter(assigned_reviewer_id = request.user.id,archived = 1)
+            # print(eventreviewers)
         else:
             eventreviewers = EventReviewers.objects.filter(assigned_reviewer_id = request.user.id,archived = 0)
 
@@ -167,12 +169,13 @@ class FetchReviewerEvent(APIView):
         return StandardResponse.success_response(self,data = data,message="Reviwer event succesfully",status=status.HTTP_200_OK)
 
 
+# get the total reviwer count under review, approved, rejected
 class FetchReviewerEventCount(APIView):
     permission_classes = [IsAdmin | IsReviewer]
     def get(self,request,format="json"):
         
         role = Role.objects.filter(account_id=request.user.id)
-
+        print(role[0].account_id)
         if role[0].is_admin == True:
             data = EventReviewers.objects.filter(archived=0).values('assigned_reviewer_id').annotate(total=Count('event_id'))
         else:
@@ -217,11 +220,10 @@ class EventStatus(APIView):
             elif "status_rework" == self.request.data.get("status").lower() or "status_rework" == self.request.data.get("status").lower():
                 event.status = 'RW'
                 event.save()
+            else:
+                return HttpResponse(("Provide appropriate status"))
 
             return HttpResponse("Succesfullu updated!!")
 
-        return HttpResponse("You are not authorzied")
-    
-    
-    
-    
+        return HttpResponse("You are not authorzied to reviwe this event")
+

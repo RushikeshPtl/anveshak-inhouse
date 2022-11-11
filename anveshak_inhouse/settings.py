@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'anveshak_inhouse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'anveshak_inhouse',
-        'USER': 'root',
-        'PASSWORD': 'anveshak',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'NAME': 'TEMP2',
+        'USER' : 'root',
+        'PASSWORD' : 'root',
+        'HOST' : '127.0.0.1',
+        'PORT' : '3306',
     }
 }
 

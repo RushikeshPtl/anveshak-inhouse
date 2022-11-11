@@ -32,8 +32,6 @@ class Account(AbstractBaseUser):
 
     class Meta:
         db_table = u'api_account'
-    
-    
 
 
 class Document(models.Model):

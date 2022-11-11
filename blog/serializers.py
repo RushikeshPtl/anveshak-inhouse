@@ -3,6 +3,21 @@ from .models import ReviewComment, Role, Title, Event
 from api.models import Account
 from review.models import EventReviewers
 
+
+def status(status):
+    if status == 'A':
+            return "STATUS_APPROVED"
+    elif status == 'R':
+        return "STATUS_REJECTED"
+    elif status == 'U':
+        return "STATUS_UNDER_REVIEW"
+    elif status == 'S':
+        return "STATUS_SUBMITTED"
+    elif status == 'RS':
+        return "STATUS_RESUBMITTED"
+    elif status == 'RW':
+        return "STATUS_REWORK"
+
 class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
@@ -82,10 +97,10 @@ class EventListSerializer(serializers.ModelSerializer):
         model = Event
         fields = ['id','author_id','description','year','status']
 
-class EventPostSerializer(serializers.ModelSerializer):
+class   EventPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['title_id','author_id','description','year']
+        fields = ['id','title_id','author_id','description','year','created_at']
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -204,5 +219,3 @@ class SortTitleEventSerializer(serializers.ModelSerializer):
         event = Event.objects.filter(title_id = obj.id)
         event = EventPostSerializer(event,many=True).data
         return event
-    
-# class

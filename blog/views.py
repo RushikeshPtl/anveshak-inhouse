@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from blog.renderers import CustomRenderer
 from .models import Event, ReviewComment, Role, Title, PageReadLogs
-from blog.serializers import AdminTitleSerializer, AuthorTitleSerializer, ReviewCommentSerializer, ReviewerTitleSerializer, RoleSerializer,ContentWriterTitleSerializer,UserTitleSerializer,UserEventSerializer,AdminEventSerializer,ReviewerEventSerializer,ContentWriterEventSerializer,AuthorEventSerializer,BlogSerializer, EventPostSerializer, SortTitleEventSerializer
+from blog.serializers import AdminTitleSerializer,TitleSerializer,EventSerializer, AuthorTitleSerializer, ReviewCommentSerializer, ReviewerTitleSerializer, RoleSerializer,ContentWriterTitleSerializer,UserTitleSerializer,UserEventSerializer,AdminEventSerializer,ReviewerEventSerializer,ContentWriterEventSerializer,AuthorEventSerializer,BlogSerializer, EventPostSerializer, SortTitleEventSerializer
 from .permissions import IsAdmin,IsAuthor,IsContentWriter,IsReviewer,IsUser
 from blog.functions import get_user_role
 from blog.classes import StandardResponse
@@ -18,19 +18,7 @@ import json
 class TitleViewSet(ModelViewSet):
     renderer_classes = [CustomRenderer]
     queryset = Title.objects.all()
-    
-    def get_serializer_class(self):
-        role = get_user_role(self)
-        if role == 'admin':
-            return AdminTitleSerializer
-        elif role == 'reviewer':
-            return ReviewerTitleSerializer
-        elif role == 'content writer':
-            return ContentWriterTitleSerializer
-        elif role == 'author':
-            return AuthorTitleSerializer
-        elif role == 'user':
-            return UserTitleSerializer
+    serializer_class = TitleSerializer
 
     def get_permissions(self):
         role = get_user_role(self)
@@ -52,6 +40,7 @@ class TitleViewSet(ModelViewSet):
             title_id = None
         role = get_user_role(self)
         return {'account_id':self.request.user.id,'title_id':title_id,'user_role':role}
+
 class EventViewSet(ModelViewSet):
     renderer_classes = [CustomRenderer]
     serializer_class = EventSerializer
@@ -126,6 +115,7 @@ class AuthorView(APIView):
 # Fetching the all event title wise of particular account
 @permission_classes([rest_framework.permissions.IsAuthenticated,])
 class FetchAllBlog(APIView):
+
     def get(self,request,format="json"):
         account = Account.objects.filter(id=self.request.data.get("id"))
         if not account.exists():
@@ -155,8 +145,8 @@ class FetchRoleWiseAccount(APIView):
 
 
 class FetchSortedEvent(APIView):
-    # asc = Old to latest
-    # desc = latest to old
+    # asc = Old to latest       or      a to z
+    # desc = latest to old      or      z to a
 
     def get(self, request,format = "json"):
 
@@ -188,7 +178,8 @@ class FetchSortedEvent(APIView):
         return HttpResponse(event, content_type = 'application/json/')
 
 
-# @permission_classes([rest_framework.permissions.IsAuthenticated,])
+# Post and get page blog reading history
+@permission_classes([rest_framework.permissions.IsAuthenticated,])
 class PageReadLog(APIView):
     def post(self, request):
         if not self.request.user.id:

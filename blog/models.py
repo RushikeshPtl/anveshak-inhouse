@@ -45,7 +45,6 @@ class Event(models.Model):
         if id == self.author_id:
             return True
         return False
-        
 
 
 class Role(models.Model):
@@ -58,7 +57,6 @@ class Role(models.Model):
     
     class Meta:
         db_table = 'Role'
-    
 
 
 class ReviewComment(models.Model):
