@@ -14,6 +14,7 @@ from api.serializers import AccountSerializer
 from django.http import HttpResponse
 import json
 
+# Adding the title in view set
 class TitleViewSet(ModelViewSet):
     renderer_classes = [CustomRenderer]
     queryset = Title.objects.all()
@@ -109,6 +110,7 @@ class RoleViewSet(ModelViewSet):
     permission_classes = [IsAdmin]
 
 
+# return the event if only the admin and particular author requested
 @permission_classes([rest_framework.permissions.IsAuthenticated,])
 class AuthorView(APIView):
 
@@ -121,6 +123,7 @@ class AuthorView(APIView):
         return StandardResponse.success_response(self,data = {"":""},message="Data Not Fetched Successfully!",status=status.HTTP_200_OK)
 
 
+# Fetching the all event title wise of particular account
 @permission_classes([rest_framework.permissions.IsAuthenticated,])
 class FetchAllBlog(APIView):
     def get(self,request,format="json"):
@@ -132,6 +135,7 @@ class FetchAllBlog(APIView):
         return StandardResponse.success_response(self,data = blog,message="Users event Title wise fetched successfully!",status=status.HTTP_200_OK)
 
 
+# returns the account role wise
 @permission_classes([rest_framework.permissions.IsAuthenticated,IsAdmin])
 class FetchRoleWiseAccount(APIView):
     
@@ -209,14 +213,17 @@ class PageReadLog(APIView):
 
     def get(self,request):
         pagereadlogs = PageReadLogs.objects.filter(event_id=self.request.data.get("event_id"),account_id = self.request.user.id)
+        if len(pagereadlogs) > 0:
+            data = {}
+            if pagereadlogs[0].page:
+                data['page'] = pagereadlogs[0].page
+            else:
+                data['percentage'] = pagereadlogs[0].percentage
 
-        data = {}
-        if pagereadlogs[0].page:
-            data['page'] = pagereadlogs[0].page
-        else:
-            data['percentage'] = pagereadlogs[0].percentage
-
-        data['event_id'] = pagereadlogs[0].event_id
-        data['account_id'] = pagereadlogs[0].account_id
-        data = json.dumps(data)
-        return HttpResponse(data, content_type = 'application/json/')
+            data['event_id'] = pagereadlogs[0].event_id
+            data['account_id'] = pagereadlogs[0].account_id
+            data = json.dumps(data)
+            return HttpResponse(data, content_type = 'application/json/')
+        return HttpResponse("their is no page read logs")
+    
+    

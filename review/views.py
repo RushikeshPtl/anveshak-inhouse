@@ -77,6 +77,9 @@ class AuthorViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'author_id':self.request.user.id}
     
+
+
+# Assignig the reviwer to particular event
 @permission_classes([rest_framework.permissions.IsAuthenticated,IsAdmin])
 class AssignReviewer(APIView):
     def post(self,request,format="json"):

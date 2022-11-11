@@ -21,10 +21,7 @@ class Account(AbstractBaseUser):
     last_login = models.DateTimeField(default=None, null=True)
     password_reset = models.CharField(max_length=50,unique=True,null=True)
     is_admin =  models.BooleanField(default=0)
-    is_staff = models.BooleanField(default=0
-    )
-
-   
+    is_staff = models.BooleanField(default=0)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -43,7 +40,4 @@ class Document(models.Model):
     account = models.OneToOneField(Account,on_delete = models.CASCADE, primary_key=True)
     file = models.FileField(upload_to='Docs/',default='Docs/None/No-doc.pdf')
     img = models.ImageField(upload_to='Images/',default='Images/None/No-img.jpg')
-
-
-
 
