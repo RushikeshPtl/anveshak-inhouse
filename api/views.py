@@ -138,7 +138,7 @@ class UpdateAccount(rest_framework.views.APIView):  #Check for authorisations.
             return HttpResponse(status=404)
 
         data=request.data
-        serializer = UpdateSerializer(account,data=data)
+        serializer = UpdateSerializer(account,data=data,partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)
