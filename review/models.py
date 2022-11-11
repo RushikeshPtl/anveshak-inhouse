@@ -33,11 +33,6 @@ class EventReviewLogs(models.Model):
         (STATUS_RESUBMITTED,'Resubmitted'),
         (STATUS_REWORK,'Rework'),
     ]
-    # event_reviewer = models.ForeignKey(Account,on_delete=models.CASCADE)
-    # comment = models.ForeignKey(ReviewComment,on_delete=models.SET_NULL,null=True)
-    # created_at = models.DateTimeField(auto_now_add=True)
-    # updated_at = models.DateTimeField(auto_now=True)
-    # status = models.CharField(max_length=10,choices=STATUS_CHOICES,default=STATUS_SUBMITTED)
     event_id = models.ForeignKey(Event,on_delete=models.CASCADE,db_column='event_id',related_name='logs')
     event_reviewer = models.ForeignKey(Account,on_delete=models.CASCADE)
     comment = models.ForeignKey(ReviewComment,on_delete=models.SET_NULL,null=True)

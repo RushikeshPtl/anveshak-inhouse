@@ -9,7 +9,6 @@ class Title(models.Model):
     class Meta:
         db_table = 'Title'
 
-
 class Event(models.Model):
     STATUS_APPROVED = 'A'
     STATUS_REJECTED = 'R'
@@ -46,8 +45,6 @@ class Event(models.Model):
             return True
         return False
         
-
-
 class Role(models.Model):
     account = models.OneToOneField(Account,on_delete=models.CASCADE,related_name='roles')
     is_admin = models.BooleanField(default=0)
@@ -59,15 +56,11 @@ class Role(models.Model):
     class Meta:
         db_table = 'Role'
     
-
-
 class ReviewComment(models.Model):
-    
     event_id = models.ForeignKey(Event,on_delete=models.CASCADE,db_column='event_id',related_name='comments')
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
 
 class PageReadLogs(models.Model):
     page = models.IntegerField(null = True)
