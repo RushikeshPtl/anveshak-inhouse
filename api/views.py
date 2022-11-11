@@ -133,8 +133,8 @@ class UpdateAccount(rest_framework.views.APIView):
             account = Account.objects.get(pk=pk)
         except Account.DoesNotExist:
             return HttpResponse(status=404)
-        data = rest_framework.parsers.JSONParser().parse(request)
-        serializer = UpdateSerializer(account,data=data)
+        data = request.data
+        serializer = UpdateSerializer(account,data=data,partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)

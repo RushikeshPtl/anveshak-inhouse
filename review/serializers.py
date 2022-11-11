@@ -1,30 +1,45 @@
 from rest_framework import serializers
 from api.models import Account
-from blog.models import Event,Title,ReviewComment,Role
+from blog.models import Event,Title,Role,ReviewComment
 from .models import EventReviewers,EventContentWriter,EventReviewLogs
-from blog.serializers import EventListSerializer,EventPostSerializer
-from django.db.models import Count,Sum,Q
-from django.db.models.functions import Concat
-from blog.functions import get_user_role
+from blog.serializers import EventListSerializer,ReviewCommentSerializer
 from . import tasks
 from rest_framework.response import Response
-
-
-class EventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Event
-        fields = ['id','title_id','author_id','description','year','created_at','status']
 from .models import EventReviewers,EventReviewLogs
-from blog.serializers import EventListSerializer,EventPostSerializer,status
 from django.db.models import Count
+from blog.functions import get_user_role
 
 class EventSerializer(serializers.ModelSerializer):
-    status = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ['id','title_id','author_id','description','year','created_at','status']
-        def get_status(self,obj):
-            return status(obj.status)
+        fields = ['id','title_id','author_id','description','year','created_at','status','is_submitted']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        try:
+            event_id = self.context['pk']
+        except KeyError:
+            event_id = None
+        comments = ReviewComment.objects.filter(event_id=event_id).all()
+        serializer = ReviewCommentSerializer(comments,many=True)
+        representation['comments'] = serializer.data
+        return representation
+    def to_internal_value(self, data):
+        
+        if self.context["role"] == 'reviewer':
+            resource_data = {
+                'status': data['status']
+            }
+            return resource_data
+        return super().to_internal_value(data)
+
+# class EventSerializer(serializers.ModelSerializer):
+#     status = serializers.SerializerMethodField()
+#     class Meta:
+#         model = Event
+#         fields = ['id','title_id','author_id','description','year','created_at','status']
+#         def get_status(self,obj):
+#             return status(obj.status)
 
 
 class EventReviewersSerializer(serializers.ModelSerializer):
@@ -56,7 +71,6 @@ class FetchEventReviewersSerializer(serializers.ModelSerializer):
             event = Event.objects.filter(id = obj.event_id_id)
         event = EventListSerializer(event[0]).data
         return event
-
 
 class FetchReviewerEventCountSerializer(serializers.ModelSerializer):
     assigned_reviewer_id = serializers.SerializerMethodField()

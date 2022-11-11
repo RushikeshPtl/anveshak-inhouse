@@ -1,7 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 from blog.renderers import CustomRenderer
 from .models import Event, ReviewComment, Role, Title, PageReadLogs
-from blog.serializers import AdminTitleSerializer, AuthorTitleSerializer, ReviewCommentSerializer, ReviewerTitleSerializer, RoleSerializer,ContentWriterTitleSerializer,UserTitleSerializer,UserEventSerializer,AdminEventSerializer,ReviewerEventSerializer,ContentWriterEventSerializer,AuthorEventSerializer,BlogSerializer, EventPostSerializer, SortTitleEventSerializer
+from blog.serializers import AdminTitleSerializer, AuthorTitleSerializer, ReviewCommentSerializer, ReviewerTitleSerializer, RoleSerializer,ContentWriterTitleSerializer,UserTitleSerializer,UserEventSerializer,AdminEventSerializer,ReviewerEventSerializer,ContentWriterEventSerializer,AuthorEventSerializer,BlogSerializer, EventPostSerializer, SortTitleEventSerializer,EventSerializer
 from .permissions import IsAdmin,IsAuthor,IsContentWriter,IsReviewer,IsUser
 from blog.functions import get_user_role
 from blog.classes import StandardResponse
