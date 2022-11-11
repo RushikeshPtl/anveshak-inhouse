@@ -141,7 +141,7 @@ class UpdateAccount(rest_framework.views.APIView):  #Check for authorisations.
         serializer = UpdateSerializer(account,data=data,partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.validated_data)
+        return Response(serializer.data)
 
 
 class AdminPanel(viewsets.ModelViewSet):
@@ -200,7 +200,15 @@ class AdminAddUser(viewsets.ModelViewSet):
     renderer_classes = [CustomRenderer]
     queryset = Account.objects.all()
     serializer_class = SignUpSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdmin,]
+    
+    def partial_update(self, request,pk):
+        user = Account.objects.get(pk=pk)
+        serializer = AccountSerializer(user,data=request.data ,partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    
     
 @receiver(post_save,sender=settings.AUTH_USER_MODEL)
 def send_registration_mail(sender,instance=None,created=False,**kwargs):
